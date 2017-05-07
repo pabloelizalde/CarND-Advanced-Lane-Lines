@@ -57,7 +57,7 @@ To demonstrate this step, I will describe how I apply the distortion correction 
 
 I used a combination of color and gradient thresholds to generate a binary image. The code can be found in the second cell. As a color space I used HLS, which give me quite good result from the start. I used channel L (to help me with shadows), to get the magnitud of the gradient. And combined this binary with the S channel, that alread gives a very good result in the image tests. Combinaning this two binaries, the result works very good with different color lanes and the color of the highway. Here is an example:
 
-![color_gradient_transform][./writeup_images/color_gradient.png]
+![color_gradient_transform](./writeup_images/color_gradient.png)
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
@@ -72,13 +72,13 @@ The code for my perspective transform includes a function called `warp()`, which
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-![warped][./writeup_images/warped.png]
+![warped](./writeup_images/warped.png)
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
 Once we have a thresholded and prespective transformed image, we can locate the lane lines and fit a polynomial. Having an image like this:
 
-![perspective][./writeup_images/perspective.png]
+![perspective](./writeup_images/perspective.png)
 
 With this image, our first step is use `histogram` to discover the peaks in the image, which will be the lane lines.
 
@@ -86,21 +86,23 @@ With this image, our first step is use `histogram` to discover the peaks in the 
 
 Next step is using `sliding windows`, we detect the lane lines for each window. We divide vertically the image in x number of windows (9 in our case). For each window we detect the non zero pixels inside the window, and move it right or left depending on the result. With this info we can extract the left and right line pixel position and find a second order polynomial. Here is an example of the previous image with the windows drawn:
 
-![windows][./writeup_images/windows.png]
+![windows](./writeup_images/windows.png)
+
+The code for this step is in cell number 7, in method `getPolyline`.
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
 Once we have the polynomials we can calculate the curvature. The code is in cell number 5. But before we can do that we need to go back to the real world space. For that we need to assume a couple of values, the lane long and the lane width. 30 meters and 3.7 meters respectively. With these values we calculate the new polynomial for the real world. And then apply the radius of curvature formula:
 
-![radius][./writeup_images/radius_curvature.png]
+![radius](./writeup_images/radius_curvature.png)
 
 To get the position of the vehicle with respect the center, we use the bottom part of the image. We get the center of the lane and we compare this value with the center of the image. The code is in cell number 6, in method `offset`.
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines cell number 7. We need to pass to this method an binary warped image. The result of this step in a test image is like this:
+I implemented this step in lines cell number 8. We need to pass to this method an binary warped image. The result of this step in a test image is like this:
 
-![radius][./writeup_images/curvature_offset.png]
+![radius](./writeup_images/curvature_offset.png)
 
 ---
 
@@ -116,4 +118,6 @@ Here's a [link to my video result](./output.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+There are a few mometns in the video, where the area is not correctly drawn. Currently I am trying to avoid this issue by measuring the width of the lane in every moment. And when I get a value very different to the average, I will not draw the area on that image and return the undistorted image. 
+I had also quite some go and back with the threshold, and what apparently worked perfectly in test images, in the video gave a really bad result. Actually one of my best approaches was just using channel S from HLS color space. 
+Once I improved this two points, I think my solution could performs better in the challenge video. Right now the performance is quite poor, most likely because all the changes in light and shadows on the road. 
